@@ -24,7 +24,7 @@ export function WhatWeDoPage() {
       <SectionHeading
         eyebrow="About Us"
         title="What We Do"
-        description="EM Insights is an editorial, media and strategic communications platform focused on reporting, analysis, research and professional media support."
+        description="Financia Digital is an editorial, media and strategic communications platform focused on reporting, analysis, research and professional media support."
       />
 
       <div className="grid gap-6 lg:grid-cols-[1.2fr,0.8fr]">
@@ -38,7 +38,7 @@ export function WhatWeDoPage() {
           <div className="mt-5 space-y-4 text-slate-600 leading-8">
             <p>
               EM Insights is a modern news and analysis platform formerly operating under
-              The London Post identity. The publication is focused on exclusive stories,
+              The Financia digital identity. The publication is focused on exclusive stories,
               international affairs, strategic communication and region-based reporting.
             </p>
             <p>
@@ -46,7 +46,7 @@ export function WhatWeDoPage() {
               interviews, web-based broadcasting, documentary production and communications advisory work.
             </p>
             <p>
-              Through its wider media network, EM Insights supports media houses, diplomatic missions,
+              Through its wider media network, Financia Digital supports media houses, diplomatic missions,
               governments, institutions and corporate clients with communication strategy, media engagement,
               crisis communication and reputation support.
             </p>
@@ -59,9 +59,10 @@ export function WhatWeDoPage() {
           </div>
           <h3 className="mt-4 text-2xl font-black text-ink">Further Info</h3>
           <div className="mt-5 space-y-4 text-slate-600">
-            <p>201 Flaxton Road, London, SE18 2EY, United Kingdom</p>
-            {/* <p>info@londonpost.news</p> */}
-            <p>Independent Media Group UK Limited</p>
+            <p>Pakistan , Islamabad</p>
+            {/* <p>financiadigitalnews@gmail.com
+</p> */}
+            <p>Financial Digital News</p>
           </div>
         </div>
       </div>
