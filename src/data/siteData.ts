@@ -19,64 +19,122 @@ export type NavCategory = {
   children?: { name: string; slug: string }[];
 };
 
-const paragraph = `London Post delivers sharp reporting, policy-focused analysis and long-form regional coverage for readers who want context, clarity and credibility. This placeholder article is intentionally long so you can test summary previews, read-more interactions and the bottom reading section without navigating away from the page. The structure is designed for your future API or CMS integration, whether you keep WordPress at the backend or move fully into your own MERN-based stack.`;
 
-const detailed = `${paragraph}\n\nEditors can later swap this text for real article bodies, embedded media, pull quotes or newsletter sign-up components. The frontend keeps the experience smooth by loading the selected article inside the same page, then scrolling to a dedicated reading area. That gives you the editorial feel of a modern research magazine while preserving a fast category browsing experience for high-volume content pages.\n\nThis demo also supports featured stories, latest updates and archived articles. You can extend the dummy data model with slugs, SEO fields, tags, sponsorship metadata, podcasts, live video IDs and membership restrictions when connecting your backend.`;
+
 export const moreMenu = [
-  'Sports',
-  'Interviews',
-  'Art & Culture',
-  'Hidden Histories',
-  'Youth Voices',
-  'Economy',
-  'Defence',
-  'Video',
-  'Opinion',
-  'Diplomatic Corner',
+  "Editor's Articles",
+  'International',
+  'Latest',
+  'Economy and Trade',
+  'Pakistan Economy Budget',
+  'Provincial Budget',
+  'Innovation and Technology',
+  'Agriculture and Food Security',
+  'Opinion'
+  
 ];
-export const regionMenus: Record<string, string[]> = {
-  asia:       ['East Asia', 'South Asia', 'Southeast Asia', 'Central Asia'],
-  europe:     [],
-  middleeast: [],
-  oceania:    [],
-  africa:     [],
-  americas:   ['North America', 'Latin America & Caribbean', 'South America'],
-  caucasus:   [],
-  russia:     [],
+export const worldMenu = [
+  'ASEAN',
+  'China',
+  'Central Asia',
+  'Caucasus',
+  'Eurasia',
+  'Americas',
+];
+
+export const worldCategories: Record<string, string[]> = {
+
+  asean: [
+    'Indonesia',
+    'Malaysia',
+    'Singapore',
+    'Thailand',
+    'Vietnam',
+    'Philippines',
+    'Cambodia',
+    'Laos',
+    'Myanmar',
+    'Brunei',
+  ],
+  china: [
+    'Politics',
+    'Economy',
+    'Technology',
+    'Trade',
+    'Security',
+    'Belt and Road',
+  ],
+  'central-asia': [
+    'Kazakhstan',
+    'Kyrgyzstan',
+    'Tajikistan',
+    'Turkmenistan',
+    'Uzbekistan',
+  ],
+  caucasus: [
+    'Armenia',
+    'Azerbaijan',
+    'Georgia',
+    'South Caucasus',
+  ],
+  eurasia: [
+    'Russia',
+    'Ukraine',
+    'Eastern Europe',
+    'Energy Corridors',
+    'Security',
+    'Trade Routes',
+  ],
+  americas: [
+    'North America',
+    'Latin America',
+    'Caribbean',
+    'United States',
+    'Canada',
+  ],
 };
 
+export const regionMenus = worldCategories;
 export const navigation: NavCategory[] = [
   { name: 'Home', slug: '/' },
   {
-    name: 'About Us',
-    slug: '/about',
-    children: [
-      { name: 'Our Team', slug: '/about/team' },
-      { name: 'Our Researchers', slug: '/about/researchers' },
-      { name: 'What We Do', slug: '/about/what-we-do' },
-    ],
+    name: 'World',
+    slug: '/world',
+    children: worldMenu.map((item) => ({
+      name: item,
+      slug: `/world/${item.toLowerCase().replace(/&/g, 'and').replace(/\s+/g, '-')}`,
+    })),
   },
-  { name: 'Contact Us', slug: '/contact' },
-  { name: 'World', slug: '/regions' },
   { name: 'Live Podcast', slug: '/live' },
-  { name: 'Mission & Vision', slug: '/mission-vision' },
-  { name: 'Asia', slug: '/region/asia' },
-  { name: 'Europe', slug: '/region/europe' },
-  { name: 'Middle East', slug: '/region/middleeast' },
-  { name: 'Americas', slug: '/region/americas' },
+  { name: 'Central Asia', slug: '/world/asia' },
+  { name: 'Asean', slug: '/world/asean' },
+  { name: 'Magazine', slug: '/section/magazine' },
+  { name: 'Media Tv', slug: '/section/mediatv' },
+  { name: 'Interview', slug: '/section/interview' },
+  { name: 'Infographics', slug: '/section/infographics' },
   {
     name: 'More',
     slug: '/more',
-    children: [
-      ...moreMenu.map((item) => ({
+    children: moreMenu
+      .filter((item) => item !== 'Magazine')
+      .map((item) => ({
         name: item,
-        slug: `/section/${item.toLowerCase().replace(/\s+/g, '-')}`,
+        slug: `/section/${item
+          .toLowerCase()
+          .replace(/[’']/g, '')
+          .replace(/&/g, 'and')
+          .replace(/\s+/g, '-')}`,
       })),
-   
-    ],
   },
+  { name: 'About Us', slug: '/about' },
   { name: 'Membership', slug: '/membership' },
 ];
+
+
+const paragraph = `London Post delivers sharp reporting, policy-focused analysis and long-form regional coverage for readers who want context, clarity and credibility. This placeholder article is intentionally long so you can test summary previews, read-more interactions and the bottom reading section without navigating away from the page. The structure is designed for your future API or CMS integration, whether you keep WordPress at the backend or move fully into your own MERN-based stack.`;
+
+const detailed = `${paragraph}\n\nEditors can later swap this text for real article bodies, embedded media, pull quotes or newsletter sign-up components. The frontend keeps the experience smooth by loading the selected article inside the same page, then scrolling to a dedicated reading area. That gives you the editorial feel of a modern research magazine while preserving a fast category browsing experience for high-volume content pages.\n\nThis demo also supports featured stories, latest updates and archived articles. You can extend the dummy data model with slugs, SEO fields, tags, sponsorship metadata, podcasts, live video IDs and membership restrictions when connecting your backend.`;
+
 
 export const homeHero = {
   title: 'From strategy to statecraft: modern journalism built for global readers',
@@ -235,20 +293,7 @@ const baseArticles: Article[] = [
     topic: 'Latest Headlines',
   },
 ];
-const countrySeed = [
-  ...regionMenus.asia,
-  ...regionMenus.europe,
-  ...regionMenus.middleeast,
-  ...regionMenus.oceania,
-  ...regionMenus.africa,
-  ...regionMenus.americas,
-  ...regionMenus.caucasus,
-  ...regionMenus.russia,
-  'Middle East',
-  'Oceania',
-  'Caucasus',
-  'Russia',
-];
+const countrySeed = Object.values(regionMenus).flat();
 
 export const articles: Article[] = [
   ...baseArticles,

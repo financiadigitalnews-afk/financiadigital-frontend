@@ -1,175 +1,9 @@
-
-// import { useState, useEffect } from 'react';
-// import { useAdminApi } from '../../hooks/useAdminApi';
-
-// export function AdminHero() {
-//   const { get, put } = useAdminApi();
-//   const [hero,      setHero]      = useState<any>(null);
-//   const [loading,   setLoading]   = useState(true);
-//   const [saving,    setSaving]    = useState(false);
-//   const [msg,       setMsg]       = useState({ text: '', type: '' });
-//   const [imageFile, setImageFile] = useState<File | null>(null);
-//   const [preview,   setPreview]   = useState('');
-
-//   useEffect(() => {
-//     get('/hero').then(setHero).catch(console.error).finally(() => setLoading(false));
-//   }, []);
-
-//   const set = (k: string, v: any) => setHero((h: any) => ({ ...h, [k]: v }));
-
-//   const handleSave = async () => {
-//     if (!hero) return;
-//     setSaving(true);
-//     setMsg({ text: '', type: '' });
-//     try {
-//       const fd = new FormData();
-//       const fields = ['mediaType', 'youtubeId', 'title', 'subtitle', 'ctaText', 'ctaLink', 'ctaText2', 'ctaLink2', 'badgeText', 'previewCaption', 'isActive'];
-//       fields.forEach((k) => { if (hero[k] !== undefined) fd.append(k, String(hero[k])); });
-//       if (imageFile) fd.append('media', imageFile);
-//       const updated = await put('/hero', fd);
-//       setHero(updated);
-//       setMsg({ text: 'Hero saved successfully.', type: 'success' });
-//       setImageFile(null);
-//       setPreview('');
-//     } catch (err: any) {
-//       setMsg({ text: err.message, type: 'error' });
-//     } finally {
-//       setSaving(false);
-//     }
-//   };
-
-//   if (loading) return <div className="py-20 text-center text-gray-400">Loading...</div>;
-//   if (!hero)   return <div className="py-20 text-center text-red-500">Failed to load.</div>;
-
-//   return (
-//     <div className="max-w-2xl space-y-5">
-//       <div>
-//         <h2 className="text-xl font-bold text-gray-900">Hero Section</h2>
-//         <p className="text-sm text-gray-500">Controls the top full-width banner. Upload a cover image, then set where the buttons link.</p>
-//       </div>
-
-//       {msg.text && (
-//         <div className={`rounded-xl px-4 py-3 text-sm ${msg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-//           {msg.text}
-//         </div>
-//       )}
-
-//       {/* Text Content */}
-//       <div className="rounded-2xl bg-white p-5 shadow-sm space-y-4">
-//         <h3 className="font-semibold text-gray-800 border-b border-gray-100 pb-3">Text Content</h3>
-//         <div>
-//           <label className="label">Main Headline</label>
-//           <textarea rows={2} value={hero.title || ''} onChange={(e) => set('title', e.target.value)} className="input w-full" />
-//         </div>
-//         <div>
-//           <label className="label">Subtitle</label>
-//           <textarea rows={2} value={hero.subtitle || ''} onChange={(e) => set('subtitle', e.target.value)} className="input w-full" />
-//         </div>
-//       </div>
-
-//       {/* CTA Buttons */}
-//       <div className="rounded-2xl bg-white p-5 shadow-sm space-y-4">
-//         <h3 className="font-semibold text-gray-800 border-b border-gray-100 pb-3">
-//           CTA Buttons — Paste article URL in the link field (e.g. /article/abc123)
-//         </h3>
-//         <div className="grid grid-cols-2 gap-4">
-//           <div>
-//             <label className="label">Button 1 Text</label>
-//             <input value={hero.ctaText || ''} onChange={(e) => set('ctaText', e.target.value)} className="input w-full" />
-//           </div>
-//           <div>
-//             <label className="label">Button 1 Link</label>
-//             <input value={hero.ctaLink || ''} onChange={(e) => set('ctaLink', e.target.value)} placeholder="/article/abc123 or /section/interviews" className="input w-full" />
-//           </div>
-//           <div>
-//             <label className="label">Button 2 Text</label>
-//             <input value={hero.ctaText2 || ''} onChange={(e) => set('ctaText2', e.target.value)} className="input w-full" />
-//           </div>
-//           <div>
-//             <label className="label">Button 2 Link</label>
-//             <input value={hero.ctaLink2 || ''} onChange={(e) => set('ctaLink2', e.target.value)} placeholder="/live or /regions" className="input w-full" />
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Media */}
-//       <div className="rounded-2xl bg-white p-5 shadow-sm space-y-4">
-//         <h3 className="font-semibold text-gray-800 border-b border-gray-100 pb-3">Right-Side Media</h3>
-//         <div>
-//           <label className="label">Media Type</label>
-//           <select value={hero.mediaType || 'image'} onChange={(e) => set('mediaType', e.target.value)} className="input w-full">
-//             <option value="image">Upload Image</option>
-//             <option value="youtube">YouTube Video (by ID)</option>
-//           </select>
-//         </div>
-
-//         {hero.mediaType === 'youtube' && (
-//           <div>
-//             <label className="label">YouTube Video ID</label>
-//             <input value={hero.youtubeId || ''} onChange={(e) => set('youtubeId', e.target.value)}
-//               placeholder="e.g. M7lc1UVf-VE" className="input w-full" />
-//             <p className="mt-1 text-xs text-gray-400">From youtube.com/watch?v=<strong>THIS_ID</strong></p>
-//           </div>
-//         )}
-
-//         {hero.mediaType === 'image' && (
-//           <div>
-//             <label className="label">Upload Hero Image</label>
-//             <input
-//               type="file" accept="image/*"
-//               onChange={(e) => { const f = e.target.files?.[0]; if (f) { setImageFile(f); setPreview(URL.createObjectURL(f)); }}}
-//               className="w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-red-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-red-700"
-//             />
-//             {(preview || hero.mediaUrl) && (
-//               <img src={preview || hero.mediaUrl} alt="preview" className="mt-3 h-40 rounded-xl object-cover shadow" />
-//             )}
-//           </div>
-//         )}
-
-//         <div className="grid grid-cols-2 gap-4">
-//           <div>
-//             <label className="label">Badge Text (top-left of media)</label>
-//             <input value={hero.badgeText || ''} onChange={(e) => set('badgeText', e.target.value)} className="input w-full" />
-//           </div>
-//           <div>
-//             <label className="label">Caption (under media)</label>
-//             <input value={hero.previewCaption || ''} onChange={(e) => set('previewCaption', e.target.value)} className="input w-full" />
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Footer */}
-//       <div className="flex items-center justify-between rounded-2xl bg-white p-5 shadow-sm">
-//         <div className="flex items-center gap-3">
-//           <span className="text-sm font-medium text-gray-700">Hero Active</span>
-//           <button
-//             onClick={() => set('isActive', !hero.isActive)}
-//             className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${hero.isActive ? 'bg-red-600' : 'bg-gray-300'}`}
-//           >
-//             <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition ${hero.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
-//           </button>
-//         </div>
-//         <button
-//           onClick={handleSave} disabled={saving}
-//           className="rounded-xl bg-red-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
-//         >
-//           {saving ? 'Saving...' : 'Save Changes'}
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-
-
 import { useEffect, useMemo, useState } from 'react';
 import { useAdminApi } from '../../hooks/useAdminApi';
 
 type HeroItem = {
   _id?: string;
-  mediaType: 'image' | 'youtube';
+  mediaType: 'video' | 'youtube' | 'image';
   youtubeId: string;
   mediaUrl: string;
   cloudinaryId?: string;
@@ -177,31 +11,20 @@ type HeroItem = {
   subtitle: string;
   ctaText: string;
   ctaLink: string;
-  ctaText2: string;
-  ctaLink2: string;
-  badgeText: string;
-  previewCaption: string;
   isActive: boolean;
-  order: number;
 };
 
 const emptyHero: HeroItem = {
-  mediaType: 'image',
-  youtubeId: 'M7lc1UVf-VE',
+  mediaType: 'video',
+  youtubeId: '',
   mediaUrl: '',
-  title: 'From strategy to statecraft: modern journalism built for global readers',
-  subtitle: 'Feature a looping video, hero image or live stream here.',
-  ctaText: 'Explore Latest Coverage',
-  ctaLink: '#',
-  ctaText2: 'Watch Live Demo',
-  ctaLink2: '/live',
-  badgeText: 'LIVE PREVIEW',
-  previewCaption: 'Your top hero can use a featured image or livestream.',
+  title: 'Bold reporting for diplomacy, defense, economics and regional intelligence.',
+  subtitle:
+    'Independent analysis, regional insight and strategic reporting for global readers.',
+  ctaText: 'Explore',
+  ctaLink: '/',
   isActive: true,
-  order: 0,
 };
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export function AdminHero() {
   const { get, post, put, del } = useAdminApi();
@@ -212,15 +35,15 @@ export function AdminHero() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState({ text: '', type: '' });
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [preview, setPreview] = useState('');
-
-  const canAddMore = heroes.length < 5;
 
   const selectedHero = useMemo(
     () => heroes.find((h) => h._id === selectedId),
     [heroes, selectedId]
   );
+
+  const canAddHero = heroes.length < 1;
 
   useEffect(() => {
     loadHeroes();
@@ -228,21 +51,18 @@ export function AdminHero() {
 
   useEffect(() => {
     if (selectedId === 'new') {
-      setHero({
-        ...emptyHero,
-        order: heroes.length,
-      });
+      setHero({ ...emptyHero });
       setPreview('');
-      setImageFile(null);
+      setMediaFile(null);
       return;
     }
 
     if (selectedHero) {
       setHero({ ...selectedHero });
       setPreview('');
-      setImageFile(null);
+      setMediaFile(null);
     }
-  }, [selectedId, selectedHero, heroes.length]);
+  }, [selectedId, selectedHero]);
 
   const loadHeroes = async () => {
     try {
@@ -255,8 +75,8 @@ export function AdminHero() {
     }
   };
 
-  const setField = (k: keyof HeroItem, v: any) => {
-    setHero((prev) => ({ ...prev, [k]: v }));
+  const setField = (key: keyof HeroItem, value: any) => {
+    setHero((prev) => ({ ...prev, [key]: value }));
   };
 
   const resetMessage = () => setMsg({ text: '', type: '' });
@@ -267,33 +87,24 @@ export function AdminHero() {
 
     try {
       const fd = new FormData();
-      const fields: (keyof HeroItem)[] = [
-        'mediaType',
-        'youtubeId',
-        'title',
-        'subtitle',
-        'ctaText',
-        'ctaLink',
-        'ctaText2',
-        'ctaLink2',
-        'badgeText',
-        'previewCaption',
-        'isActive',
-        'order',
-      ];
 
-      fields.forEach((k) => {
-        if (hero[k] !== undefined) {
-          fd.append(String(k), String(hero[k] as any));
-        }
-      });
+      fd.append('mediaType', hero.mediaType);
+      fd.append('youtubeId', hero.youtubeId || '');
+      fd.append('title', hero.title || '');
+      fd.append('subtitle', hero.subtitle || '');
+      fd.append('ctaText', hero.ctaText || 'Explore');
+      fd.append('ctaLink', hero.ctaLink || '/');
+      fd.append('isActive', String(hero.isActive));
 
-      if (imageFile) fd.append('media', imageFile);
+      if (mediaFile) {
+        fd.append('media', mediaFile);
+      }
 
       let saved;
+
       if (selectedId === 'new') {
         saved = await post('/hero', fd);
-        setMsg({ text: 'Hero added successfully.', type: 'success' });
+        setMsg({ text: 'Hero created successfully.', type: 'success' });
       } else {
         saved = await put(`/hero/${selectedId}`, fd);
         setMsg({ text: 'Hero updated successfully.', type: 'success' });
@@ -301,10 +112,13 @@ export function AdminHero() {
 
       await loadHeroes();
       setSelectedId(saved._id);
-      setImageFile(null);
+      setMediaFile(null);
       setPreview('');
     } catch (err: any) {
-      setMsg({ text: err?.message || 'Failed to save hero.', type: 'error' });
+      setMsg({
+        text: err?.message || 'Failed to save hero.',
+        type: 'error',
+      });
     } finally {
       setSaving(false);
     }
@@ -312,6 +126,7 @@ export function AdminHero() {
 
   const handleDelete = async (id?: string) => {
     if (!id) return;
+
     const ok = window.confirm('Are you sure you want to delete this hero?');
     if (!ok) return;
 
@@ -319,110 +134,117 @@ export function AdminHero() {
 
     try {
       await del(`/hero/${id}`);
-      const updatedHeroes = heroes.filter((h) => h._id !== id);
-      setHeroes(updatedHeroes);
+      setHeroes([]);
       setSelectedId('new');
+      setHero({ ...emptyHero });
       setMsg({ text: 'Hero deleted successfully.', type: 'success' });
     } catch (err: any) {
-      setMsg({ text: err?.message || 'Failed to delete hero.', type: 'error' });
+      setMsg({
+        text: err?.message || 'Failed to delete hero.',
+        type: 'error',
+      });
     }
   };
 
-  const moveHero = async (index: number, direction: 'up' | 'down') => {
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= heroes.length) return;
-
-    const reordered = [...heroes];
-    [reordered[index], reordered[newIndex]] = [reordered[newIndex], reordered[index]];
-
-    const heroIds = reordered.map((h) => h._id).filter(Boolean);
-
-    try {
-      const updated = await put('/hero/reorder/list', { heroIds });
-      setHeroes(updated);
-    } catch (err) {
-      console.error(err);
-      setMsg({ text: 'Failed to reorder heroes.', type: 'error' });
-    }
-  };
-
-  if (loading) return <div className="py-20 text-center text-gray-400">Loading...</div>;
+  if (loading) {
+    return <div className="py-20 text-center text-gray-400">Loading...</div>;
+  }
 
   return (
     <div className="max-w-6xl space-y-5">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Hero Section</h2>
+        <h2 className="text-xl font-bold text-gray-900">Homepage Hero</h2>
         <p className="text-sm text-gray-500">
-          Add up to 5 homepage hero slides. Edit, delete, and reorder without changing the approved hero styling.
+          Manage one homepage hero video with overlay text and one Explore button.
         </p>
       </div>
 
       {msg.text && (
-        <div className={`rounded-xl px-4 py-3 text-sm ${msg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+        <div
+          className={`rounded-xl px-4 py-3 text-sm ${
+            msg.type === 'success'
+              ? 'bg-green-50 text-green-700'
+              : 'bg-red-50 text-red-700'
+          }`}
+        >
           {msg.text}
         </div>
       )}
 
-      {/* Existing Heroes List */}
-      <div className="rounded-2xl bg-white p-5 shadow-sm space-y-4">
-        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-          <h3 className="font-semibold text-gray-800">Existing Hero Items ({heroes.length}/5)</h3>
+      <div className="rounded-2xl bg-white p-5 shadow-sm">
+        <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+          <h3 className="font-semibold text-gray-800">
+            Existing Hero ({heroes.length}/1)
+          </h3>
+
           <button
+            type="button"
             onClick={() => setSelectedId('new')}
-            disabled={!canAddMore}
-            className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+            disabled={!canAddHero}
+            className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Add New Hero
+            Add Hero
           </button>
         </div>
 
         {heroes.length === 0 ? (
-          <p className="text-sm text-gray-500">No hero items added yet.</p>
+          <p className="pt-4 text-sm text-gray-500">No hero added yet.</p>
         ) : (
-          <div className="space-y-3">
-            {heroes.map((item, index) => (
+          <div className="pt-4">
+            {heroes.map((item) => (
               <div
                 key={item._id}
                 className={`flex items-center gap-4 rounded-xl border p-3 ${
-                  selectedId === item._id ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                  selectedId === item._id
+                    ? 'border-primary bg-primary/5'
+                    : 'border-gray-200'
                 }`}
               >
-                <img
-                  src={item.mediaType === 'image' ? item.mediaUrl || 'https://via.placeholder.com/120x80?text=Hero' : `https://img.youtube.com/vi/${item.youtubeId}/hqdefault.jpg`}
-                  alt={item.title}
-                  className="h-20 w-32 rounded-lg object-cover"
-                />
+                <div className="h-20 w-32 overflow-hidden rounded-lg bg-gray-100">
+                  {item.mediaType === 'video' && item.mediaUrl ? (
+                    <video
+                      src={item.mediaUrl}
+                      className="h-full w-full object-cover"
+                      muted
+                    />
+                  ) : item.mediaType === 'youtube' && item.youtubeId ? (
+                    <img
+                      src={`https://img.youtube.com/vi/${item.youtubeId}/hqdefault.jpg`}
+                      alt={item.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : item.mediaUrl ? (
+                    <img
+                      src={item.mediaUrl}
+                      alt={item.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : null}
+                </div>
 
                 <div className="min-w-0 flex-1">
-                  <h4 className="truncate font-semibold text-gray-800">{item.title || 'Untitled Hero'}</h4>
-                  <p className="truncate text-sm text-gray-500">{item.subtitle || 'No subtitle'}</p>
+                  <h4 className="truncate font-semibold text-gray-800">
+                    {item.title || 'Untitled Hero'}
+                  </h4>
+                  <p className="truncate text-sm text-gray-500">
+                    {item.subtitle || 'No subtitle'}
+                  </p>
                   <p className="mt-1 text-xs text-gray-400">
-                    #{index + 1} • {item.isActive ? 'Active' : 'Inactive'}
+                    {item.isActive ? 'Active' : 'Inactive'} • {item.mediaType}
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2">
                   <button
-                    onClick={() => moveHero(index, 'up')}
-                    disabled={index === 0}
-                    className="rounded-lg border px-3 py-1.5 text-sm text-gray-700 disabled:opacity-40"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    onClick={() => moveHero(index, 'down')}
-                    disabled={index === heroes.length - 1}
-                    className="rounded-lg border px-3 py-1.5 text-sm text-gray-700 disabled:opacity-40"
-                  >
-                    ↓
-                  </button>
-                  <button
+                    type="button"
                     onClick={() => setSelectedId(item._id!)}
                     className="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white"
                   >
                     Edit
                   </button>
+
                   <button
+                    type="button"
                     onClick={() => handleDelete(item._id)}
                     className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white"
                   >
@@ -435,177 +257,186 @@ export function AdminHero() {
         )}
       </div>
 
-      {/* Form */}
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="space-y-5">
-          <div className="rounded-2xl bg-white p-5 shadow-sm space-y-4">
-            <h3 className="font-semibold text-gray-800 border-b border-gray-100 pb-3">
-              {selectedId === 'new' ? 'Add New Hero' : 'Edit Hero'}
+          <div className="rounded-2xl bg-white p-5 shadow-sm">
+            <h3 className="border-b border-gray-100 pb-3 font-semibold text-gray-800">
+              {selectedId === 'new' ? 'Add Hero Content' : 'Edit Hero Content'}
             </h3>
 
-            <div>
-              <label className="label">Main Headline</label>
-              <textarea
-                rows={2}
-                value={hero.title || ''}
-                onChange={(e) => setField('title', e.target.value)}
-                className="input w-full"
-              />
-            </div>
-
-            <div>
-              <label className="label">Subtitle</label>
-              <textarea
-                rows={2}
-                value={hero.subtitle || ''}
-                onChange={(e) => setField('subtitle', e.target.value)}
-                className="input w-full"
-              />
-            </div>
-          </div>
-
-          <div className="rounded-2xl bg-white p-5 shadow-sm space-y-4">
-            <h3 className="font-semibold text-gray-800 border-b border-gray-100 pb-3">
-              CTA Buttons — Paste article URL in the link field (e.g. /article/abc123)
-            </h3>
-
-            <div className="grid grid-cols-2 gap-4">
+            <div className="mt-4 space-y-4">
               <div>
-                <label className="label">Button 1 Text</label>
-                <input
-                  value={hero.ctaText || ''}
-                  onChange={(e) => setField('ctaText', e.target.value)}
+                <label className="label">Headline</label>
+                <textarea
+                  rows={3}
+                  value={hero.title}
+                  onChange={(e) => setField('title', e.target.value)}
                   className="input w-full"
+                  placeholder="Hero headline"
                 />
               </div>
 
               <div>
-                <label className="label">Button 1 Link</label>
-                <input
-                  value={hero.ctaLink || ''}
-                  onChange={(e) => setField('ctaLink', e.target.value)}
-                  placeholder="/article/abc123 or /section/interviews"
+                <label className="label">Subtitle</label>
+                <textarea
+                  rows={3}
+                  value={hero.subtitle}
+                  onChange={(e) => setField('subtitle', e.target.value)}
                   className="input w-full"
+                  placeholder="Hero subtitle"
                 />
               </div>
 
-              <div>
-                <label className="label">Button 2 Text</label>
-                <input
-                  value={hero.ctaText2 || ''}
-                  onChange={(e) => setField('ctaText2', e.target.value)}
-                  className="input w-full"
-                />
-              </div>
-
-              <div>
-                <label className="label">Button 2 Link</label>
-                <input
-                  value={hero.ctaLink2 || ''}
-                  onChange={(e) => setField('ctaLink2', e.target.value)}
-                  placeholder="/live or /regions"
-                  className="input w-full"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-5">
-          <div className="rounded-2xl bg-white p-5 shadow-sm space-y-4">
-            <h3 className="font-semibold text-gray-800 border-b border-gray-100 pb-3">Right-Side Media</h3>
-
-            <div>
-              <label className="label">Media Type</label>
-              <select
-                value={hero.mediaType || 'image'}
-                onChange={(e) => setField('mediaType', e.target.value)}
-                className="input w-full"
-              >
-                <option value="image">Upload Image</option>
-                <option value="youtube">YouTube Video (by ID)</option>
-              </select>
-            </div>
-
-            {hero.mediaType === 'youtube' && (
-              <div>
-                <label className="label">YouTube Video ID</label>
-                <input
-                  value={hero.youtubeId || ''}
-                  onChange={(e) => setField('youtubeId', e.target.value)}
-                  placeholder="e.g. M7lc1UVf-VE"
-                  className="input w-full"
-                />
-                <p className="mt-1 text-xs text-gray-400">
-                  From youtube.com/watch?v=<strong>THIS_ID</strong>
-                </p>
-              </div>
-            )}
-
-            {hero.mediaType === 'image' && (
-              <div>
-                <label className="label">Upload Hero Image</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) {
-                      setImageFile(f);
-                      setPreview(URL.createObjectURL(f));
-                    }
-                  }}
-                  className="w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-red-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-red-700"
-                />
-                {(preview || hero.mediaUrl) && (
-                  <img
-                    src={preview || hero.mediaUrl}
-                    alt="preview"
-                    className="mt-3 h-40 rounded-xl object-cover shadow"
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="label">Button Text</label>
+                  <input
+                    value={hero.ctaText}
+                    onChange={(e) => setField('ctaText', e.target.value)}
+                    className="input w-full"
+                    placeholder="Explore"
                   />
-                )}
-              </div>
-            )}
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="label">Badge Text (top-left of media)</label>
-                <input
-                  value={hero.badgeText || ''}
-                  onChange={(e) => setField('badgeText', e.target.value)}
-                  className="input w-full"
-                />
-              </div>
-
-              <div>
-                <label className="label">Caption (under media)</label>
-                <input
-                  value={hero.previewCaption || ''}
-                  onChange={(e) => setField('previewCaption', e.target.value)}
-                  className="input w-full"
-                />
+                <div>
+                  <label className="label">Button Link</label>
+                  <input
+                    value={hero.ctaLink}
+                    onChange={(e) => setField('ctaLink', e.target.value)}
+                    className="input w-full"
+                    placeholder="/article/article-slug"
+                  />
+                </div>
               </div>
             </div>
           </div>
 
           <div className="flex items-center justify-between rounded-2xl bg-white p-5 shadow-sm">
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-700">Hero Active</span>
+              <span className="text-sm font-medium text-gray-700">
+                Hero Active
+              </span>
+
               <button
+                type="button"
                 onClick={() => setField('isActive', !hero.isActive)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${hero.isActive ? 'bg-red-600' : 'bg-gray-300'}`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                  hero.isActive ? 'bg-primary' : 'bg-gray-300'
+                }`}
               >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition ${hero.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition ${
+                    hero.isActive ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
               </button>
             </div>
 
             <button
+              type="button"
               onClick={handleSave}
-              disabled={saving}
-              className="rounded-xl bg-red-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+              disabled={saving || (selectedId === 'new' && !canAddHero)}
+              className="rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {saving ? 'Saving...' : selectedId === 'new' ? 'Add Hero' : 'Save Changes'}
+              {saving
+                ? 'Saving...'
+                : selectedId === 'new'
+                  ? 'Add Hero'
+                  : 'Save Changes'}
             </button>
+          </div>
+        </div>
+
+        <div className="space-y-5">
+          <div className="rounded-2xl bg-white p-5 shadow-sm">
+            <h3 className="border-b border-gray-100 pb-3 font-semibold text-gray-800">
+              Hero Media
+            </h3>
+
+            <div className="mt-4 space-y-4">
+              <div>
+                <label className="label">Media Type</label>
+                <select
+                  value={hero.mediaType}
+                  onChange={(e) =>
+                    setField('mediaType', e.target.value as HeroItem['mediaType'])
+                  }
+                  className="input w-full"
+                >
+                  <option value="video">Upload Video</option>
+                  <option value="youtube">YouTube Video ID</option>
+                  <option value="image">Upload Image</option>
+                </select>
+              </div>
+
+              {hero.mediaType === 'youtube' ? (
+                <div>
+                  <label className="label">YouTube Video ID</label>
+                  <input
+                    value={hero.youtubeId}
+                    onChange={(e) => setField('youtubeId', e.target.value)}
+                    placeholder="Example: M7lc1UVf-VE"
+                    className="input w-full"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label className="label">
+                    {hero.mediaType === 'video'
+                      ? 'Upload Hero Video'
+                      : 'Upload Hero Image'}
+                  </label>
+
+                  <input
+                    type="file"
+                    accept={hero.mediaType === 'video' ? 'video/*' : 'image/*'}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+
+                      if (file) {
+                        setMediaFile(file);
+                        setPreview(URL.createObjectURL(file));
+                      }
+                    }}
+                    className="w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-primary/10 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary"
+                  />
+                </div>
+              )}
+
+              <div className="overflow-hidden rounded-2xl border border-gray-200 bg-gray-100">
+                {hero.mediaType === 'video' && (preview || hero.mediaUrl) ? (
+                  <video
+                    src={preview || hero.mediaUrl}
+                    className="h-72 w-full object-cover"
+                    controls
+                    muted
+                    loop
+                  />
+                ) : hero.mediaType === 'youtube' && hero.youtubeId ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${hero.youtubeId}`}
+                    className="h-72 w-full"
+                    allowFullScreen
+                    title="Hero YouTube preview"
+                  />
+                ) : hero.mediaType === 'image' && (preview || hero.mediaUrl) ? (
+                  <img
+                    src={preview || hero.mediaUrl}
+                    alt="Hero preview"
+                    className="h-72 w-full object-cover"
+                  />
+                ) : (
+                  <div className="grid h-72 place-items-center text-sm text-gray-400">
+                    Media preview will appear here.
+                  </div>
+                )}
+              </div>
+
+              <p className="text-xs leading-5 text-gray-500">
+                Uploaded video will autoplay, stay muted, loop continuously, and
+                play behind the hero text on the homepage.
+              </p>
+            </div>
           </div>
         </div>
       </div>

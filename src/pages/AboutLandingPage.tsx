@@ -2,8 +2,7 @@ import { Link } from 'react-router-dom';
 import { SectionHeading } from '../components/SectionHeading';
 
 const cards = [
-  ['Our Team', '/about/team', 'Leadership, editorial, advisory and growth teams.'],
-  ['Our Researchers', '/about/researchers', 'Specialists driving briefings, explainers and regional expertise.'],
+  ['Mission And Vision', '/about/mission-and-vision', 'Leadership, editorial, advisory and growth teams.'],
   ['What We Do', '/about/what-we-do', 'How journalism, research and events come together.'],
 ];
 

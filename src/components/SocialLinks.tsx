@@ -15,9 +15,9 @@ export function SocialLinks() {
           key={index}
           href={href}
           aria-label={label}
-          className="grid h-11 w-11 place-items-center rounded-full border border-red-900/30 bg-red-900/10 transition duration-200 hover:scale-105 hover:bg-red-900/20"
+          className="grid h-11 w-11 place-items-center rounded-full border border-primary/30 bg-primary/10 transition duration-200 hover:scale-105 hover:bg-primary/20"
         >
-          <Icon className="h-5 w-5 text-red-800" />
+          <Icon className="h-5 w-5" />
         </a>
       ))}
     </div>

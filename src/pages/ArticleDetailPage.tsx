@@ -1,5 +1,3 @@
-
-
 // import { useEffect, useState } from 'react';
 // import { Link, useNavigate, useParams } from 'react-router-dom';
 // import { AdBanner } from '../components/AdBanner';
@@ -10,7 +8,7 @@
 //   return /<[a-z][\s\S]*>/i.test(str) || /&lt;[a-z][\s\S]*&gt;/i.test(str);
 // }
 
-// function decodeAndStrip(html: string): string {
+// function decodeAndStrip(html: string) {
 //   const ta = document.createElement('textarea');
 //   ta.innerHTML = html;
 //   const decoded = ta.value;
@@ -27,7 +25,11 @@
 // }
 
 // function getKeywords(title: string): string[] {
-//   const stop = new Set(['the','a','an','and','or','of','in','on','at','to','for','with','by','from','is','are','was','were','how','what','why','when','who','that','this','has','have','its','their']);
+//   const stop = new Set([
+//     'the','a','an','and','or','of','in','on','at','to','for','with','by','from',
+//     'is','are','was','were','how','what','why','when','who','that','this','has','have','its','their'
+//   ]);
+
 //   return title.toLowerCase()
 //     .replace(/[^a-z0-9\s]/g, '')
 //     .split(/\s+/)
@@ -38,17 +40,33 @@
 //   if (!Array.isArray(hashtags) || hashtags.length === 0) return null;
 
 //   return (
-//     <div className="mt-10 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
-//       <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-500">Hashtags</p>
-//       <div className="mt-4 flex flex-wrap gap-2.5">
-//         {hashtags.map((tag) => (
-//           <span
-//             key={tag}
-//             className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm"
-//           >
-//             #{tag}
-//           </span>
-//         ))}
+//     <div className="mt-10 rounded-[2rem] border border-slate-200/80 bg-gradient-to-br from-white to-slate-50 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+//       <div className="px-6 pt-6">
+//         <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">
+//           Hashtags
+//         </p>
+//       </div>
+
+//       <div className="p-6 pt-5">
+//         <div className="flex flex-wrap gap-3">
+//           {hashtags.map((tag, index) => {
+//             const isRed = index % 2 === 0;
+
+//             return (
+//               <span
+//                 key={`${tag}-${index}`}
+//                 className={
+//                   isRed
+//                     ? 'inline-flex items-center rounded-full border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 shadow-sm ring-1 ring-red-50 transition hover:-translate-y-0.5 hover:bg-red-50'
+//                     : 'inline-flex items-center rounded-full border border-primary/20 bg-white px-4 py-2.5 text-sm font-semibold text-primary shadow-sm ring-1 ring-primary/5 transition hover:-translate-y-0.5 hover:bg-primary/5'
+//                 }
+//               >
+//                 <span className="mr-1.5 text-[15px]">#</span>
+//                 {tag}
+//               </span>
+//             );
+//           })}
+//         </div>
 //       </div>
 //     </div>
 //   );
@@ -57,9 +75,9 @@
 // export function ArticleDetailPage() {
 //   const { id } = useParams<{ id: string }>();
 //   const navigate = useNavigate();
-//   const [article,  setArticle]  = useState<any>(null);
-//   const [related,  setRelated]  = useState<any[]>([]);
-//   const [loading,  setLoading]  = useState(true);
+//   const [article, setArticle] = useState<any>(null);
+//   const [related, setRelated] = useState<any[]>([]);
+//   const [loading, setLoading] = useState(true);
 //   const [notFound, setNotFound] = useState(false);
 
 //   useEffect(() => {
@@ -75,17 +93,28 @@
 
 //       try {
 //         const r = await fetch(`${API_URL}/region-articles/${id}`);
-//         if (r.ok) { art = await r.json(); source = 'region'; }
+//         if (r.ok) {
+//           art = await r.json();
+//           source = 'region';
+//         }
 //       } catch {}
 
 //       if (!art) {
 //         try {
 //           const r = await fetch(`${API_URL}/section-articles/${id}`);
-//           if (r.ok) { art = await r.json(); source = 'section'; }
+//           if (r.ok) {
+//             art = await r.json();
+//             source = 'section';
+//           }
 //         } catch {}
 //       }
 
-//       if (!art) { setNotFound(true); setLoading(false); return; }
+//       if (!art) {
+//         setNotFound(true);
+//         setLoading(false);
+//         return;
+//       }
+
 //       setArticle(art);
 
 //       try {
@@ -226,7 +255,39 @@
 //                 <div className="prose-article whitespace-pre-wrap text-slate-700 leading-relaxed">{safeContent}</div>
 //               )
 //             )}
-
+// {/* Gallery images — after content */}
+// {Array.isArray(article.galleryImages) && article.galleryImages.length > 0 && (
+//   <div className="mt-10 space-y-6">
+//     {/* Images 1 & 2 — two column */}
+//     {article.galleryImages.slice(0, 2).length > 0 && (
+//       <div className={`grid gap-4 ${article.galleryImages.length >= 2 ? 'sm:grid-cols-2' : ''}`}>
+//         {article.galleryImages.slice(0, 2).map((img: any, i: number) => (
+//           <figure key={i} className="overflow-hidden rounded-2xl">
+//             <img src={img.url} alt={`Image ${i + 1}`} className="w-full max-h-72 object-cover" />
+//           </figure>
+//         ))}
+//       </div>
+//     )}
+//     {/* Image 3 — right aligned */}
+//     {article.galleryImages[2] && (
+//       <figure className="overflow-hidden rounded-2xl sm:float-right sm:ml-6 sm:mb-4 sm:w-72 clear-both">
+//         <img src={article.galleryImages[2].url} alt="Image 3" className="w-full max-h-64 object-cover" />
+//       </figure>
+//     )}
+//     {/* Image 4 — centered */}
+//     {article.galleryImages[3] && (
+//       <figure className="clear-both mx-auto max-w-2xl overflow-hidden rounded-2xl">
+//         <img src={article.galleryImages[3].url} alt="Image 4" className="w-full max-h-80 object-cover" />
+//       </figure>
+//     )}
+//     {/* Image 5 — bottom */}
+//     {article.galleryImages[4] && (
+//       <figure className="overflow-hidden rounded-2xl">
+//         <img src={article.galleryImages[4].url} alt="Image 5" className="w-full max-h-80 object-cover" />
+//       </figure>
+//     )}
+//   </div>
+// )}
 //             <HashtagBox hashtags={article.hashtags} />
 
 //             {related.length > 0 && (
@@ -287,7 +348,6 @@
 
 
 
-
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AdBanner } from '../components/AdBanner';
@@ -319,7 +379,6 @@ function getKeywords(title: string): string[] {
     'the','a','an','and','or','of','in','on','at','to','for','with','by','from',
     'is','are','was','were','how','what','why','when','who','that','this','has','have','its','their'
   ]);
-
   return title.toLowerCase()
     .replace(/[^a-z0-9\s]/g, '')
     .split(/\s+/)
@@ -328,38 +387,129 @@ function getKeywords(title: string): string[] {
 
 function HashtagBox({ hashtags }: { hashtags?: string[] }) {
   if (!Array.isArray(hashtags) || hashtags.length === 0) return null;
-
   return (
     <div className="mt-10 rounded-[2rem] border border-slate-200/80 bg-gradient-to-br from-white to-slate-50 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
       <div className="px-6 pt-6">
-        <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">
-          Hashtags
-        </p>
+        <p className="text-xs font-black uppercase tracking-[0.35em] text-slate-500">Hashtags</p>
       </div>
-
       <div className="p-6 pt-5">
         <div className="flex flex-wrap gap-3">
-          {hashtags.map((tag, index) => {
-            const isRed = index % 2 === 0;
-
-            return (
-              <span
-                key={`${tag}-${index}`}
-                className={
-                  isRed
-                    ? 'inline-flex items-center rounded-full border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 shadow-sm ring-1 ring-red-50 transition hover:-translate-y-0.5 hover:bg-red-50'
-                    : 'inline-flex items-center rounded-full border border-primary/20 bg-white px-4 py-2.5 text-sm font-semibold text-primary shadow-sm ring-1 ring-primary/5 transition hover:-translate-y-0.5 hover:bg-primary/5'
-                }
-              >
-                <span className="mr-1.5 text-[15px]">#</span>
-                {tag}
-              </span>
-            );
-          })}
+          {hashtags.map((tag, index) => (
+            <span key={`${tag}-${index}`}
+              className={index % 2 === 0
+                ? 'inline-flex items-center rounded-full border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 shadow-sm ring-1 ring-red-50 transition hover:-translate-y-0.5 hover:bg-red-50'
+                : 'inline-flex items-center rounded-full border border-primary/20 bg-white px-4 py-2.5 text-sm font-semibold text-primary shadow-sm ring-1 ring-primary/5 transition hover:-translate-y-0.5 hover:bg-primary/5'
+              }>
+              <span className="mr-1.5 text-[15px]">#</span>{tag}
+            </span>
+          ))}
         </div>
       </div>
     </div>
   );
+}
+
+/* ── Full-width gallery image (no floating) ── */
+function GalleryImage({ img }: { img: { url: string } }) {
+  return (
+    <figure className="my-8 overflow-hidden rounded-2xl">
+      <img src={img.url} alt="" className="w-full object-cover max-h-96 rounded-2xl" />
+    </figure>
+  );
+}
+
+/* ── Article body with gallery images injected between paragraphs ── */
+function ArticleBody({ content, gallery }: { content: string; gallery: { url: string }[] }) {
+  const contentIsHtml = isHTML(content);
+  const safeContent = contentIsHtml ? decodeAndStrip(content) : content;
+
+  if (!contentIsHtml) {
+    // Plain text — split by double newline, inject after specific paragraphs
+    const paragraphs = safeContent.split(/\n\n+/).filter(Boolean);
+    const total = paragraphs.length;
+
+    // Injection points as fractions of total paragraphs
+    const insertAfter = [
+      Math.floor(total * 0.2),
+      Math.floor(total * 0.4),
+      Math.floor(total * 0.6),
+      Math.floor(total * 0.75),
+      Math.floor(total * 0.9),
+    ];
+
+    const result: React.ReactNode[] = [];
+    paragraphs.forEach((p, i) => {
+      result.push(<p key={`p-${i}`} className="mb-4 text-slate-700 leading-relaxed">{p}</p>);
+      const galleryIdx = insertAfter.indexOf(i);
+      if (galleryIdx !== -1 && gallery[galleryIdx]) {
+        result.push(
+          <GalleryImage key={`g-${galleryIdx}`} img={gallery[galleryIdx]} />
+        );
+      }
+    });
+
+    return <div className="prose-article">{result}</div>;
+  }
+
+  // HTML content — split into chunks by block-level tags, inject between them
+  const splitPattern = /(?<=<\/(?:p|h[2-6]|blockquote|ul|ol|li|div)>)/gi;
+  const chunks = safeContent.split(splitPattern).filter(c => c.trim());
+  const total = chunks.length;
+
+  if (total < 3) {
+    // Too short to inject — show content then images below
+    return (
+      <>
+        <div className="prose-article" dangerouslySetInnerHTML={{ __html: safeContent }} />
+        {gallery.length > 0 && (
+          <div className="mt-8 space-y-6">
+            {gallery.map((img, i) => (
+              <GalleryImage key={i} img={img} />
+            ))}
+          </div>
+        )}
+      </>
+    );
+  }
+
+  const insertAfter = [
+    Math.floor(total * 0.2),
+    Math.floor(total * 0.4),
+    Math.floor(total * 0.6),
+    Math.floor(total * 0.75),
+    Math.floor(total * 0.9),
+  ];
+
+  const result: React.ReactNode[] = [];
+  let buffer = '';
+
+  chunks.forEach((chunk, i) => {
+    buffer += chunk;
+    const galleryIdx = insertAfter.indexOf(i);
+    if (galleryIdx !== -1 && gallery[galleryIdx]) {
+      // Flush buffer as HTML
+      if (buffer.trim()) {
+        result.push(
+          <div key={`html-${i}`} className="prose-article"
+            dangerouslySetInnerHTML={{ __html: buffer }} />
+        );
+        buffer = '';
+      }
+      result.push(
+        <GalleryImage key={`g-${galleryIdx}`} img={gallery[galleryIdx]} />
+      );
+    }
+  });
+
+  // Flush remaining
+  if (buffer.trim()) {
+    result.push(
+      <div key="html-end" className="prose-article"
+        dangerouslySetInnerHTML={{ __html: buffer }} />
+    );
+  }
+
+  return <>{result}</>;
 }
 
 export function ArticleDetailPage() {
@@ -383,27 +533,17 @@ export function ArticleDetailPage() {
 
       try {
         const r = await fetch(`${API_URL}/region-articles/${id}`);
-        if (r.ok) {
-          art = await r.json();
-          source = 'region';
-        }
+        if (r.ok) { art = await r.json(); source = 'region'; }
       } catch {}
 
       if (!art) {
         try {
           const r = await fetch(`${API_URL}/section-articles/${id}`);
-          if (r.ok) {
-            art = await r.json();
-            source = 'section';
-          }
+          if (r.ok) { art = await r.json(); source = 'section'; }
         } catch {}
       }
 
-      if (!art) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
+      if (!art) { setNotFound(true); setLoading(false); return; }
 
       setArticle(art);
 
@@ -457,10 +597,8 @@ export function ArticleDetailPage() {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 px-4 text-center">
         <p className="text-2xl font-bold text-ink">Article not found</p>
-        <button
-          onClick={() => navigate(-1)}
-          className="rounded-full bg-primary px-6 py-3 font-semibold text-white transition hover:bg-primary/90"
-        >
+        <button onClick={() => navigate(-1)}
+          className="rounded-full bg-primary px-6 py-3 font-semibold text-white transition hover:bg-primary/90">
           ← Go Back
         </button>
       </div>
@@ -468,30 +606,24 @@ export function ArticleDetailPage() {
   }
 
   const content = article.content || '';
-  const contentIsHtml = isHTML(content);
-  const safeContent = contentIsHtml ? decodeAndStrip(content) : content;
   const isVideo = article.section === 'video' && article.videoId;
+  const gallery: { url: string }[] = Array.isArray(article.galleryImages) ? article.galleryImages : [];
 
   return (
     <div>
       {article.imageUrl && !isVideo && (
         <div className="w-full">
-          <img
-            src={article.imageUrl}
-            alt={article.title}
+          <img src={article.imageUrl} alt={article.title}
             className="w-full object-cover"
-            style={{ height: 'clamp(320px, 55vw, 620px)' }}
-          />
+            style={{ height: 'clamp(320px, 55vw, 620px)' }} />
         </div>
       )}
 
       <div className="mx-auto max-w-7xl px-4 py-10 lg:px-6">
         <div className="grid gap-10 xl:grid-cols-[1fr,300px]">
           <div>
-            <button
-              onClick={() => navigate(-1)}
-              className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-primary hover:text-primary"
-            >
+            <button onClick={() => navigate(-1)}
+              className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-primary hover:text-primary">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
               </svg>
@@ -505,8 +637,7 @@ export function ArticleDetailPage() {
                   title={article.title}
                   className="h-full w-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+                  allowFullScreen />
               </div>
             )}
 
@@ -538,12 +669,18 @@ export function ArticleDetailPage() {
 
             <hr className="my-8 border-slate-100" />
 
+            {/* Article body with gallery images injected inline */}
             {content && (
-              contentIsHtml ? (
-                <div className="prose-article" dangerouslySetInnerHTML={{ __html: safeContent }} />
-              ) : (
-                <div className="prose-article whitespace-pre-wrap text-slate-700 leading-relaxed">{safeContent}</div>
-              )
+              <ArticleBody content={content} gallery={gallery} />
+            )}
+
+            {/* If no content but has gallery, show gallery */}
+            {!content && gallery.length > 0 && (
+              <div className="space-y-8">
+                {gallery.map((img, i) => (
+                  <GalleryImage key={i} img={img} />
+                ))}
+              </div>
             )}
 
             <HashtagBox hashtags={article.hashtags} />
@@ -561,27 +698,17 @@ export function ArticleDetailPage() {
                     const relId = rel._id || rel.id || '';
                     const isRelVideo = rel.section === 'video';
                     const linkTo = isRelVideo ? `/video/${relId}` : `/article/${relId}`;
-
                     return (
-                      <Link
-                        key={relId}
-                        to={linkTo}
-                        className="group overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-soft"
-                      >
+                      <Link key={relId} to={linkTo}
+                        className="group overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-soft">
                         {rel.imageUrl && (
                           <div className="aspect-[4/3] overflow-hidden">
-                            <img
-                              src={rel.imageUrl}
-                              alt={rel.title}
-                              className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                            />
+                            <img src={rel.imageUrl} alt={rel.title}
+                              className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
                           </div>
                         )}
-
                         <div className="p-5">
-                          <div className="text-xs font-bold uppercase tracking-[0.3em] text-accent">
-                            {rel.category}
-                          </div>
+                          <div className="text-xs font-bold uppercase tracking-[0.3em] text-accent">{rel.category}</div>
                           <h3 className="mt-2 line-clamp-2 text-base font-bold text-ink">{rel.title}</h3>
                           <p className="mt-1 text-xs text-slate-400">{rel.author} · {rel.date}</p>
                         </div>
