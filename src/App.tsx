@@ -39,6 +39,9 @@ import { DisclaimerPage } from './pages/DisclaimerPage';
 import { MagazineListPage }   from './pages/MagazineListPage';
 import { MagazineReaderPage } from './pages/MagazineReaderPage';
 import { AdminMagazines }     from './admin/pages/sections/AdminMagazines';
+import { MediaTVPage }       from './pages/MediaTVPage';
+import { MediaTVDetailPage } from './pages/MediaTVDetailPage';
+import { AdminMediaTV }      from './admin/pages/sections/AdminMediaTV';
 function AppContent() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -57,6 +60,8 @@ function AppContent() {
         <Route path="/membership" element={<MembershipPage />} />
         <Route path="/more" element={<Navigate to="/section/world-news" replace />} />
         <Route path="/section/magazine" element={<MagazineListPage />} />
+        <Route path="/section/mediatv" element={<MediaTVPage />} />
+<Route path="/mediatv/:id"     element={<MediaTVDetailPage />} />
 <Route path="/magazine/:id"     element={<MagazineReaderPage />} />
 
         {/* Sections */}
@@ -104,6 +109,8 @@ function AppContent() {
           <Route path="contact-requests" element={<AdminContactRequests />} />
           <Route path="all-pages"        element={<AdminAllPages />} />
           <Route path="magazines" element={<AdminMagazines />} />
+          <Route path="media-tv" element={<AdminMediaTV />} />
+
 
         </Route>
 
