@@ -59,6 +59,12 @@ const NAV_OTHER: NavItem[] = [
   icon: '📚',
   desc: 'Digital magazine issues',
 },
+  {
+  path: '/admin/media-tv',
+  label: 'Media TV',
+  icon: '📺',
+  desc: 'YouTube video management',
+},
 ];
 
 function NavLink({
