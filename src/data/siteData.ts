@@ -106,7 +106,7 @@ export const navigation: NavCategory[] = [
     })),
   },
   { name: 'Live Podcast', slug: '/live' },
-  { name: 'Central Asia', slug: '/world/asia' },
+  { name: 'Central Asia', slug: 'world/central-asia' },
   { name: 'Asean', slug: '/world/asean' },
   { name: 'Magazine', slug: '/section/magazine' },
   { name: 'Media Tv', slug: '/section/mediatv' },
