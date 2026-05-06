@@ -28,9 +28,9 @@ export function AdminLogin() {
     <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
         <div className="mb-8 text-center">
-          <div className="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-red-600 text-2xl text-white font-bold">LP</div>
+          <div className="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-red-600 text-2xl text-white font-bold">FD</div>
           <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
-          <p className="mt-1 text-sm text-gray-500">LondonPost Content Management</p>
+          <p className="mt-1 text-sm text-gray-500">Financia Digital Content Management</p>
         </div>
         {error && (
           <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-100">
