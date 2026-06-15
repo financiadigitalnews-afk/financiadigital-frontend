@@ -61,7 +61,7 @@ export function Footer() {
         </div>
 
         <div className="relative border-t border-white/10 px-4 py-5 text-center text-sm text-slate-400">
-          © 2026 Financia Digital News. All rights reserved.
+          © 2026 Financia Digital News. All rights reserved (Absoltix Solution).
         </div>
       </div>
     </footer>
