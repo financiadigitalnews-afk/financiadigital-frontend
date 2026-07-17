@@ -236,6 +236,14 @@ export function ArticleDetailPage() {
     tryFetch();
   }, [id]);
 
+    useEffect(() => {
+  if (article?.title) {
+    document.title = `${article.title} | Financia Digital News`;
+  }
+  return () => {
+    document.title = 'Financia Digital News'; // reset on unmount
+  };
+}, [article]);
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
