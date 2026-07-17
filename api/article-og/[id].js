@@ -23,7 +23,7 @@ function escapeHtml(str = '') {
     .replace(/"/g, '&quot;');
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   const { id } = req.query;
   const userAgent = req.headers['user-agent'] || '';
 
@@ -77,9 +77,9 @@ module.exports = async (req, res) => {
 </body>
 </html>`.trim();
 
-    res.setHeader('Content-Type', 'text/html');
-    res.status(200).send(html);
+  res.setHeader('Content-Type', 'text/html');
+  res.status(200).send(html);
   } catch (e) {
-    res.status(500).send('Error generating preview');
+    res.status(500).send('Error generating preview: ' + e.message);
   }
-};
+}
