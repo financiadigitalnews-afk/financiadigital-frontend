@@ -1,6 +1,8 @@
+
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AdBanner } from '../components/AdBanner';
+import { ShareButtons } from '../components/ShareButtons';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -59,14 +61,17 @@ function HashtagBox({ hashtags }: { hashtags?: string[] }) {
   );
 }
 
-/* ── Full-width gallery image (no floating) ── */
+/* ── Full-width gallery image (natural size, no cropping) ── */
 function GalleryImage({ img }: { img: { url: string } }) {
   return (
     <figure className="my-8 overflow-hidden rounded-2xl">
-      <img src={img.url} alt="" className="w-full object-cover max-h-96 rounded-2xl" />
+      <img src={img.url} alt="" className="w-full h-auto object-contain rounded-2xl" />
     </figure>
   );
 }
+
+const PROSE_IMG_CLASSES =
+  'prose-article [&_img]:w-full [&_img]:h-auto [&_img]:object-contain [&_img]:rounded-2xl [&_img]:my-6';
 
 /* ── Article body with gallery images injected between paragraphs ── */
 function ArticleBody({ content, gallery }: { content: string; gallery: { url: string }[] }) {
@@ -78,7 +83,6 @@ function ArticleBody({ content, gallery }: { content: string; gallery: { url: st
     const paragraphs = safeContent.split(/\n\n+/).filter(Boolean);
     const total = paragraphs.length;
 
-    // Injection points as fractions of total paragraphs
     const insertAfter = [
       Math.floor(total * 0.2),
       Math.floor(total * 0.4),
@@ -98,7 +102,7 @@ function ArticleBody({ content, gallery }: { content: string; gallery: { url: st
       }
     });
 
-    return <div className="prose-article">{result}</div>;
+    return <div className={PROSE_IMG_CLASSES}>{result}</div>;
   }
 
   // HTML content — split into chunks by block-level tags, inject between them
@@ -107,10 +111,9 @@ function ArticleBody({ content, gallery }: { content: string; gallery: { url: st
   const total = chunks.length;
 
   if (total < 3) {
-    // Too short to inject — show content then images below
     return (
       <>
-        <div className="prose-article" dangerouslySetInnerHTML={{ __html: safeContent }} />
+        <div className={PROSE_IMG_CLASSES} dangerouslySetInnerHTML={{ __html: safeContent }} />
         {gallery.length > 0 && (
           <div className="mt-8 space-y-6">
             {gallery.map((img, i) => (
@@ -137,10 +140,9 @@ function ArticleBody({ content, gallery }: { content: string; gallery: { url: st
     buffer += chunk;
     const galleryIdx = insertAfter.indexOf(i);
     if (galleryIdx !== -1 && gallery[galleryIdx]) {
-      // Flush buffer as HTML
       if (buffer.trim()) {
         result.push(
-          <div key={`html-${i}`} className="prose-article"
+          <div key={`html-${i}`} className={PROSE_IMG_CLASSES}
             dangerouslySetInnerHTML={{ __html: buffer }} />
         );
         buffer = '';
@@ -151,10 +153,9 @@ function ArticleBody({ content, gallery }: { content: string; gallery: { url: st
     }
   });
 
-  // Flush remaining
   if (buffer.trim()) {
     result.push(
-      <div key="html-end" className="prose-article"
+      <div key="html-end" className={PROSE_IMG_CLASSES}
         dangerouslySetInnerHTML={{ __html: buffer }} />
     );
   }
@@ -303,6 +304,11 @@ export function ArticleDetailPage() {
               )}
             </div>
 
+            {/* SHARE BUTTONS - under byline */}
+            <div className="mt-5">
+              <ShareButtons title={article.title} />
+            </div>
+
             {/* MAIN IMAGE - AFTER AUTHOR/DATE SECTION (for non-video articles) */}
             {article.imageUrl && !isVideo && (
               <div className="mt-8 mb-8 w-full overflow-hidden rounded-2xl">
@@ -342,6 +348,12 @@ export function ArticleDetailPage() {
 
             {/* HASHTAGS */}
             <HashtagBox hashtags={article.hashtags} />
+
+            {/* SHARE BUTTONS - end of article */}
+            <div className="mt-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-6 py-5">
+              <p className="text-sm font-bold text-slate-600">Found this useful? Share it.</p>
+              <ShareButtons title={article.title} compact />
+            </div>
 
             {/* RELATED ARTICLES */}
             {related.length > 0 && (
