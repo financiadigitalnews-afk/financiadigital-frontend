@@ -52,6 +52,24 @@ const WORLD_REGIONS = [
     isVideo: false,
   },
   {
+  value: 'middle-east',
+  label: 'Middle East',
+  type: 'region' as const,
+  subCategories: [
+    'Saudi Arabia',
+    'UAE',
+    'Qatar',
+    'Egypt',
+    'Iran',
+    'Israel',
+    'Iraq',
+    'Jordan',
+    'Kuwait',
+    'Lebanon',
+  ],
+  isVideo: false,
+},
+  {
     value: 'caucasus',
     label: 'Caucasus',
     type: 'region' as const,
@@ -171,6 +189,7 @@ const HOME_OPTIONS = [
   { value: 'editors-articles', label: "✍️ Editor's Articles Block",  max: 5 },
   { value: 'asean-home',       label: '🌏 ASEAN Home Feature',       max: 6 },
   { value: 'central-asia',     label: '🌏 Central Asia Carousel',    max: 5 },
+    { value: 'middle-east',      label: '🕌 Middle East Carousel',     max: 5 },
   { value: 'interviews',       label: '🎤 Interviews Home Block',    max: 4 },
   { value: 'opinion',          label: '💬 Opinion Home Block',       max: 4 },
 ];
