@@ -181,6 +181,7 @@ export function HomePage() {
   const [latestNews,      setLatestNews]      = useState<Article[]>([]);
   const [editorsArticles, setEditorsArticles] = useState<Article[]>([]);
   const [centralAsia,     setCentralAsia]     = useState<Article[]>([]);
+  const [middleEast,      setMiddleEast]      = useState<Article[]>([]);
   const [asean,           setAsean]           = useState<Article[]>([]);
   const [interviews,      setInterviews]      = useState<Article[]>([]);
   const [opinionArticles, setOpinionArticles] = useState<Article[]>([]);
@@ -194,15 +195,17 @@ export function HomePage() {
       fetchSectionHome('latest-news',       5),
       fetchSectionHome('editors-articles',  5),
       fetchRegionHome('central-asia',        5),
+      fetchRegionHome('middle-east',         5),
       fetchRegionHome('asean-home',          6),
       fetchSectionHome('interviews',         5),
       fetchSectionHome('video',              5),
       fetchSectionHome('opinion',            5),
       fetchSectionHome('diplomatic-corner',  5),
-    ]).then(([ln, ea, ca, as, iv, vi, op, dc]) => {
+    ]).then(([ln, ea, ca, me, as, iv, vi, op, dc]) => {
       if (ln.length) setLatestNews(ln);
       if (ea.length) setEditorsArticles(ea);
       if (ca.length) setCentralAsia(ca);
+      if (me.length) setMiddleEast(me);
       if (as.length) setAsean(as);
       if (iv.length) setInterviews(iv);
       if (op.length) setOpinionArticles(op);
@@ -213,6 +216,7 @@ export function HomePage() {
   const latest   = latestNews.length      ? latestNews      : staticLatest;
   const editors  = editorsArticles.length ? editorsArticles : staticEditors;
   const ca       = centralAsia;
+  const me       = middleEast;
   const aseanArt = asean;
   const intv     = interviews.length      ? interviews      : staticIntv;
  
@@ -242,6 +246,10 @@ export function HomePage() {
               </div>
               <div className="hidden xl:block">
                 <AdBanner vertical identifier="homepage-banner-1" />
+              </div>
+              {/* Mobile / tablet fallback so this ad slot isn't lost below xl */}
+              <div className="xl:hidden">
+                <AdBanner identifier="homepage-banner-1" />
               </div>
             </div>
           </div>
@@ -293,7 +301,7 @@ export function HomePage() {
       {/* ── AD STRIP ── */}
       <section className="bg-white border-y border-slate-100 py-6">
         <div className="mx-auto max-w-7xl px-4 lg:px-6">
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
             <AdBanner identifier="homepage-banner-2" />
             <AdBanner identifier="homepage-banner-3" />
           </div>
@@ -307,6 +315,18 @@ export function HomePage() {
             <SectionHeader eyebrow="Region" title="Central Asia" href="/world/central-asia" light />
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               {ca.map(a => <DarkCard key={a.id} article={a} />)}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── MIDDLE EAST ── */}
+      {me.length > 0 && (
+        <section className="bg-slate-700 py-12">
+          <div className="mx-auto max-w-7xl px-4 lg:px-6">
+            <SectionHeader eyebrow="Region" title="Middle East" href="/world/middle-east" light />
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              {me.map(a => <DarkCard key={a.id} article={a} />)}
             </div>
           </div>
         </section>
@@ -340,6 +360,10 @@ export function HomePage() {
                     ))}
                   </div>
                 )}
+                {/* Mobile / tablet fallback ad slot */}
+                <div className="xl:hidden">
+                  <AdBanner identifier="homepage-banner-4" />
+                </div>
               </div>
             </div>
           </div>
@@ -405,7 +429,10 @@ export function HomePage() {
                 ))}
               </div>
               <div className="hidden lg:block">
-                <AdBanner vertical />
+                <AdBanner vertical identifier="homepage-banner-opinion" />
+              </div>
+              <div className="lg:hidden">
+                <AdBanner identifier="homepage-banner-opinion" />
               </div>
             </div>
           </div>
