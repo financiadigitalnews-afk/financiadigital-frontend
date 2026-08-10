@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AdBanner } from '../components/AdBanner';
@@ -182,6 +183,7 @@ export function HomePage() {
   const [editorsArticles, setEditorsArticles] = useState<Article[]>([]);
   const [centralAsia,     setCentralAsia]     = useState<Article[]>([]);
   const [middleEast,      setMiddleEast]      = useState<Article[]>([]);
+  const [pakistan,        setPakistan]        = useState<Article[]>([]);
   const [asean,           setAsean]           = useState<Article[]>([]);
   const [interviews,      setInterviews]      = useState<Article[]>([]);
   const [opinionArticles, setOpinionArticles] = useState<Article[]>([]);
@@ -196,16 +198,18 @@ export function HomePage() {
       fetchSectionHome('editors-articles',  5),
       fetchRegionHome('central-asia',        5),
       fetchRegionHome('middle-east',         5),
+      fetchRegionHome('pakistan-home',       5),
       fetchRegionHome('asean-home',          6),
       fetchSectionHome('interviews',         5),
       fetchSectionHome('video',              5),
       fetchSectionHome('opinion',            5),
       fetchSectionHome('diplomatic-corner',  5),
-    ]).then(([ln, ea, ca, me, as, iv, vi, op, dc]) => {
+    ]).then(([ln, ea, ca, me, pk, as, iv, vi, op, dc]) => {
       if (ln.length) setLatestNews(ln);
       if (ea.length) setEditorsArticles(ea);
       if (ca.length) setCentralAsia(ca);
       if (me.length) setMiddleEast(me);
+      if (pk.length) setPakistan(pk);
       if (as.length) setAsean(as);
       if (iv.length) setInterviews(iv);
       if (op.length) setOpinionArticles(op);
@@ -217,6 +221,7 @@ export function HomePage() {
   const editors  = editorsArticles.length ? editorsArticles : staticEditors;
   const ca       = centralAsia;
   const me       = middleEast;
+  const pk       = pakistan;
   const aseanArt = asean;
   const intv     = interviews.length      ? interviews      : staticIntv;
  
@@ -307,6 +312,18 @@ export function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ── PAKISTAN ── */}
+      {pk.length > 0 && (
+        <section className="bg-emerald-900 py-12">
+          <div className="mx-auto max-w-7xl px-4 lg:px-6">
+            <SectionHeader eyebrow="Country" title="Pakistan" href="/world/pakistan" light />
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              {pk.map(a => <DarkCard key={a.id} article={a} />)}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── CENTRAL ASIA ── */}
       {ca.length > 0 && (
