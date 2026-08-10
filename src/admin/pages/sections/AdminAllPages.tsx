@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect, useCallback } from 'react';
 import { useAdminApi } from '../../hooks/useAdminApi';
 import { RichTextEditor } from '../../components/RichTextEditor';
@@ -66,6 +67,21 @@ const WORLD_REGIONS = [
     'Jordan',
     'Kuwait',
     'Lebanon',
+  ],
+  isVideo: false,
+},
+{
+  value: 'pakistan',
+  label: 'Pakistan',
+  type: 'region' as const,
+  subCategories: [
+    'Punjab',
+    'Sindh',
+    'Khyber Pakhtunkhwa',
+    'Balochistan',
+    'Gilgit-Baltistan',
+    'Azad Kashmir',
+    'Islamabad',
   ],
   isVideo: false,
 },
@@ -190,8 +206,10 @@ const HOME_OPTIONS = [
   { value: 'asean-home',       label: '🌏 ASEAN Home Feature',       max: 6 },
   { value: 'central-asia',     label: '🌏 Central Asia Carousel',    max: 5 },
     { value: 'middle-east',      label: '🕌 Middle East Carousel',     max: 5 },
+    { value: 'pakistan-home', label: '🇵🇰 Pakistan Home Feature', max: 5 },
   { value: 'interviews',       label: '🎤 Interviews Home Block',    max: 4 },
   { value: 'opinion',          label: '💬 Opinion Home Block',       max: 4 },
+
 ];
 const MONTHS = [
   { v: '1', l: 'January' },
