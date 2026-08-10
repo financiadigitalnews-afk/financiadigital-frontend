@@ -1,3 +1,5 @@
+
+
 export type Article = {
   id: string;
   title: string;
@@ -38,6 +40,7 @@ export const worldMenu = [
   'China',
   'Central Asia',
   'Middle East',
+  'Pakistan',
   'Caucasus',
   'Eurasia',
   'Americas',
@@ -105,6 +108,15 @@ export const worldCategories: Record<string, string[]> = {
     'United States',
     'Canada',
   ],
+  pakistan: [
+  'Punjab',
+  'Sindh',
+  'Khyber Pakhtunkhwa',
+  'Balochistan',
+  'Gilgit-Baltistan',
+  'Azad Kashmir',
+  'Islamabad',
+],
 };
 
 export const regionMenus = worldCategories;
