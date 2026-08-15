@@ -2,13 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AdBanner } from '../components/AdBanner';
 import { Hero } from '../components/Hero';
-import { HeadlineSection } from '../components/HeadlineSection';
+import { HeadlineSection } from '../components/Headlinesection';
 import { Article, articles as staticArticles } from '../data/siteData';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 function toArticle(a: any): Article {
-  return {
+  return { 
     id: a._id || a.id || '',
     title: a.title || '',
     subtitle: a.subtitle || '',
