@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect, useCallback } from 'react';
 import { useAdminApi } from '../../hooks/useAdminApi';
 import { RichTextEditor } from '../../components/RichTextEditor';
@@ -203,6 +201,7 @@ const ALL_SECTIONS = [...WORLD_REGIONS, ...MORE_SECTIONS];
 const HOME_OPTIONS = [
   { value: 'latest-news',      label: '📰 Latest News Block',        max: 5 },
   { value: 'editors-articles', label: "✍️ Editor's Articles Block",  max: 5 },
+  { value: 'headline',         label: '🔥 Headline (Top Stories)',   max: 8 },
   { value: 'asean-home',       label: '🌏 ASEAN Home Feature',       max: 6 },
   { value: 'central-asia',     label: '🌏 Central Asia Carousel',    max: 5 },
     { value: 'middle-east',      label: '🕌 Middle East Carousel',     max: 5 },
@@ -521,6 +520,7 @@ const remainingSlots = Math.max(0, 5 - totalCount);
 
   const homeOpt = HOME_OPTIONS.find((o) => o.value === f.homeSection);
   const homeMax = homeOpt?.max ?? 5;
+  const isHeadline = f.homeSection === 'headline';
   const subCats = sectionConfig.subCategories || [];
   const isVideo = sectionConfig.isVideo;
   const ytThumb =
@@ -864,9 +864,20 @@ const remainingSlots = Math.max(0, 5 - totalCount);
                     Occupied positions are displaced automatically.
                   </p>
                 )}
+
+                {isHeadline && (
+                  <p className="mt-1.5 rounded-lg bg-orange-50 border border-orange-200 p-2 text-xs text-orange-800">
+                    🔥 Headline order is automatic — newest article always
+                    shows first. When the 9th article is added, the oldest
+                    one is removed from Headline automatically. No manual
+                    position needed.
+                  </p>
+                )}
               </div>
 
-              {f.homeSection && (
+              {/* Manual position picker hidden for Headline — its order
+                  is fully automatic (by date), not admin-assigned. */}
+              {f.homeSection && !isHeadline && (
                 <div>
                   <label className="mb-1 block text-xs font-semibold text-indigo-600 uppercase tracking-wide">
                     Position 1 = first, max {homeMax}
@@ -995,7 +1006,13 @@ function ArticleRow({
             </span>
           )}
 
-          {a.showOnHome && a.homeSection && a.homeSection !== 'hero' && (
+          {a.showOnHome && a.homeSection === 'headline' && (
+            <span className="rounded-md bg-orange-100 px-2 py-0.5 text-[10px] font-bold text-orange-800">
+              🔥 Headline
+            </span>
+          )}
+
+          {a.showOnHome && a.homeSection && a.homeSection !== 'hero' && a.homeSection !== 'headline' && (
             <span className="rounded-md bg-indigo-100 px-2 py-0.5 text-[10px] font-bold text-indigo-700">
               🏠 {(homeOpt?.label || a.homeSection).replace(/\(.*\)/, '').trim()} #
               {a.homeSortOrder}
