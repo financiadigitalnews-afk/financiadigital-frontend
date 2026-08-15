@@ -37,7 +37,10 @@ export function Hero() {
   const ctaLink = hero.ctaLink || '/';
 
   return (
-    <section className="relative min-h-[620px] overflow-hidden bg-slate-950 text-white">
+    // Mobile keeps a taller box (min-h-[420px]) since text needs room to breathe.
+    // Desktop (lg+) is capped at a fixed 440px so the whole hero — including its
+    // caption box — fits on screen at 100% zoom below your header/nav.
+    <section className="relative min-h-[420px] lg:h-[440px] overflow-hidden bg-slate-950 text-white">
       <div className="absolute inset-0">
         {hero.mediaType === 'video' && hero.mediaUrl ? (
           <video
@@ -70,24 +73,24 @@ export function Hero() {
       <div className="absolute inset-0 bg-slate-950/35" />
       <div className="absolute inset-0 bg-gradient-to-r from-slate-950/75 via-slate-950/30 to-transparent" />
 
-      <div className="relative z-10 mx-auto flex min-h-[620px] max-w-7xl items-center px-4 py-20 sm:px-6 lg:px-8">
-        <div className="max-w-3xl rounded-[2rem] border border-white/35 bg-slate-950/45 p-7 shadow-[0_30px_90px_rgba(0,0,0,0.35)] sm:p-10 lg:p-12">
-          <p className="text-xs font-black uppercase tracking-[0.42em] text-slate-200">
+      <div className="relative z-10 mx-auto flex h-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl rounded-2xl border border-white/35 bg-slate-950/45 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.35)] sm:p-6 lg:p-7">
+          <p className="text-[10px] font-black uppercase tracking-[0.35em] text-slate-200">
             Home Page Hero
           </p>
 
-          <h1 className="mt-5 text-4xl font-black leading-[1.05] tracking-[-0.04em] text-white sm:text-5xl lg:text-6xl">
+          <h1 className="mt-3 text-2xl font-black leading-[1.1] tracking-[-0.03em] text-white sm:text-3xl lg:text-4xl">
             {title}
           </h1>
 
-          <p className="mt-6 max-w-2xl text-base leading-8 text-white/82 sm:text-lg">
+          <p className="mt-3 max-w-xl text-sm leading-6 text-white/82 lg:text-base">
             {subtitle}
           </p>
 
-          <div className="mt-8">
+          <div className="mt-5">
             <Link
               to={ctaLink}
-              className="inline-flex rounded-full bg-white px-7 py-3.5 text-sm font-black text-slate-950 shadow-lg transition hover:-translate-y-0.5 hover:bg-primary hover:text-white"
+              className="inline-flex rounded-full bg-white px-5 py-2.5 text-xs font-black text-slate-950 shadow-lg transition hover:-translate-y-0.5 hover:bg-primary hover:text-white"
             >
               {ctaText}
             </Link>
