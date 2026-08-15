@@ -1,8 +1,8 @@
-
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AdBanner } from '../components/AdBanner';
 import { Hero } from '../components/Hero';
+import { HeadlineSection } from '../components/HeadlineSection';
 import { Article, articles as staticArticles } from '../data/siteData';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -20,10 +20,14 @@ function toArticle(a: any): Article {
     region: a.region || '',
     featured: a.isFeatured || a.featured || false,
     topic: a.category || '',
+    // Needed to sort Headline (merged from two collections) by real
+    // creation time rather than the free-text `date` field, which an
+    // admin could type in any format/order.
+    ...(a.createdAt ? { createdAt: a.createdAt } : {}),
     ...(Array.isArray(a.hashtags) ? { hashtags: a.hashtags } : {}),
     ...(a.section ? { section: a.section } : {}),
     ...(a.videoId ? { videoId: a.videoId } : {}),
-  } as Article;
+  } as Article & { createdAt?: string };
 }
 
 async function apiGet(path: string): Promise<any[]> {
@@ -43,6 +47,41 @@ async function fetchRegionHome(section: string, limit = 5): Promise<Article[]> {
   const data = await apiGet(`/region-articles/home-section/${section}?limit=${limit}`);
   return data.map(toArticle);
 }
+
+// Headline pulls from BOTH SectionArticle and RegionArticle (mirrors how
+// the backend already treats 'hero' as cross-model). Each side is already
+// capped server-side, but we merge + re-sort by real createdAt here and
+// slice to 8 as a final guarantee regardless of which side contributed.
+async function fetchHeadline(limit = 8): Promise<Article[]> {
+  const [fromSections, fromRegions] = await Promise.all([
+    fetchSectionHome('headline', limit),
+    fetchRegionHome('headline', limit),
+  ]);
+
+  return [...fromSections, ...fromRegions]
+    .sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+    .slice(0, limit);
+}
+
+/* ─── Module-level cache ───
+   Lives outside the component, so it survives route navigation within the
+   same browser session (SPA — component unmounts/remounts, this doesn't).
+   First visit: null → skeleton shows → fetch → cache filled → rendered.
+   Every visit after: cache is already there → renders instantly, no
+   skeleton, no refetch, no dummy-data flash. Clears on a hard page reload
+   (which is what you want — a real reload should get fresh data). */
+type HomeData = {
+  latestNews: Article[];
+  editorsArticles: Article[];
+  centralAsia: Article[];
+  middleEast: Article[];
+  pakistan: Article[];
+  asean: Article[];
+  interviews: Article[];
+  opinionArticles: Article[];
+  headline: Article[];
+};
+let homeDataCache: HomeData | null = null;
 
 /* ─── Section Label ─── */
 function SectionLabel({ text, light = false }: { text: string; light?: boolean }) {
@@ -175,62 +214,117 @@ function BreakingTicker() {
   );
 }
 
+/* ─── Skeleton pieces ─── */
+function Shimmer({ className = '' }: { className?: string }) {
+  return <div className={`animate-pulse rounded-xl bg-slate-200 ${className}`} />;
+}
 
+function HeadlineSkeleton() {
+  return (
+    <section className="bg-slate-950 py-8">
+      <div className="mx-auto max-w-7xl px-4 lg:px-6">
+        <div className="mb-4 h-4 w-28 animate-pulse rounded bg-slate-800" />
+        <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+          <div className="aspect-[16/10] animate-pulse rounded-xl bg-slate-800" />
+          <div className="grid gap-3">
+            <div className="aspect-[16/9] animate-pulse rounded-xl bg-slate-800" />
+            <div className="aspect-[16/9] animate-pulse rounded-xl bg-slate-800" />
+            <div className="aspect-[16/9] animate-pulse rounded-xl bg-slate-800" />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CardGridSkeleton({ count = 5, dark = false }: { count?: number; dark?: boolean }) {
+  return (
+    <section className={`py-12 ${dark ? 'bg-slate-800' : 'bg-white'}`}>
+      <div className="mx-auto max-w-7xl px-4 lg:px-6">
+        <div className={`mb-7 h-8 w-40 animate-pulse rounded ${dark ? 'bg-slate-700' : 'bg-slate-200'}`} />
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          {Array.from({ length: count }).map((_, i) => (
+            <Shimmer key={i} className={`aspect-[4/3] ${dark ? 'bg-slate-700' : ''}`} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 /* ─── HomePage ─── */
 export function HomePage() {
-  const [latestNews,      setLatestNews]      = useState<Article[]>([]);
-  const [editorsArticles, setEditorsArticles] = useState<Article[]>([]);
-  const [centralAsia,     setCentralAsia]     = useState<Article[]>([]);
-  const [middleEast,      setMiddleEast]      = useState<Article[]>([]);
-  const [pakistan,        setPakistan]        = useState<Article[]>([]);
-  const [asean,           setAsean]           = useState<Article[]>([]);
-  const [interviews,      setInterviews]      = useState<Article[]>([]);
-  const [opinionArticles, setOpinionArticles] = useState<Article[]>([]);
+  // If we already have cached data from a previous visit this session,
+  // hydrate state with it immediately — skips the loading state entirely.
+  const [data, setData] = useState<HomeData | null>(homeDataCache);
+  const [loading, setLoading] = useState(homeDataCache === null);
 
-  const staticLatest   = useMemo(() => staticArticles.slice(0, 5), []);
-  const staticEditors  = useMemo(() => staticArticles.filter(a => a.featured).slice(0, 5), []);
-  const staticIntv     = useMemo(() => staticArticles.filter(a => a.category === 'Interviews').slice(0, 4), []);
+  const staticLatest  = useMemo(() => staticArticles.slice(0, 5), []);
+  const staticEditors = useMemo(() => staticArticles.filter(a => a.featured).slice(0, 5), []);
+  const staticIntv    = useMemo(() => staticArticles.filter(a => a.category === 'Interviews').slice(0, 4), []);
 
   useEffect(() => {
+    // Cache already warm — nothing to fetch, nothing to flash.
+    if (homeDataCache !== null) return;
+
+    let cancelled = false;
+
     Promise.all([
-      fetchSectionHome('latest-news',       5),
-      fetchSectionHome('editors-articles',  5),
-      fetchRegionHome('central-asia',        5),
-      fetchRegionHome('middle-east',         5),
-      fetchRegionHome('pakistan-home',       5),
-      fetchRegionHome('asean-home',          6),
-      fetchSectionHome('interviews',         5),
-      fetchSectionHome('video',              5),
-      fetchSectionHome('opinion',            5),
-      fetchSectionHome('diplomatic-corner',  5),
-    ]).then(([ln, ea, ca, me, pk, as, iv, vi, op, dc]) => {
-      if (ln.length) setLatestNews(ln);
-      if (ea.length) setEditorsArticles(ea);
-      if (ca.length) setCentralAsia(ca);
-      if (me.length) setMiddleEast(me);
-      if (pk.length) setPakistan(pk);
-      if (as.length) setAsean(as);
-      if (iv.length) setInterviews(iv);
-      if (op.length) setOpinionArticles(op);
-      
+      fetchSectionHome('latest-news',      5),
+      fetchSectionHome('editors-articles', 5),
+      fetchRegionHome('central-asia',      5),
+      fetchRegionHome('middle-east',       5),
+      fetchRegionHome('pakistan-home',     5),
+      fetchRegionHome('asean-home',        6),
+      fetchSectionHome('interviews',       5),
+      fetchSectionHome('opinion',          5),
+      fetchHeadline(8),
+    ]).then(([ln, ea, ca, me, pk, as, iv, op, hl]) => {
+      if (cancelled) return;
+
+      const resolved: HomeData = {
+        latestNews:      ln,
+        editorsArticles: ea,
+        centralAsia:     ca,
+        middleEast:      me,
+        pakistan:        pk,
+        asean:           as,
+        interviews:      iv,
+        opinionArticles: op,
+        headline:        hl,
+      };
+
+      homeDataCache = resolved;
+      setData(resolved);
+      setLoading(false);
     });
+
+    return () => { cancelled = true; };
   }, []);
 
-  const latest   = latestNews.length      ? latestNews      : staticLatest;
-  const editors  = editorsArticles.length ? editorsArticles : staticEditors;
-  const ca       = centralAsia;
-  const me       = middleEast;
-  const pk       = pakistan;
-  const aseanArt = asean;
-  const intv     = interviews.length      ? interviews      : staticIntv;
- 
-  const opinion  = opinionArticles;
- 
+  // While the FIRST load is in flight, show skeletons — never dummy data.
+  if (loading || !data) {
+    return (
+      <div className="bg-slate-50">
+        <HeadlineSkeleton />
+        <CardGridSkeleton count={5} />
+        <div className="h-[440px] animate-pulse bg-slate-800" />
+        <CardGridSkeleton count={5} dark />
+      </div>
+    );
+  }
+
+  // Real data only falls back to static content if the API genuinely
+  // returned nothing (not while still loading — that's the skeleton's job).
+  const latest  = data.latestNews.length      ? data.latestNews      : staticLatest;
+  const editors = data.editorsArticles.length ? data.editorsArticles : staticEditors;
+  const intv    = data.interviews.length      ? data.interviews      : staticIntv;
 
   return (
     <div className="bg-slate-50">
-      <Hero />
+      {/* ── HEADLINE (Top Stories) — new top section ── */}
+      <HeadlineSection articles={data.headline} />
+
       <BreakingTicker />
 
       {/* ── LATEST NEWS ── */}
@@ -240,11 +334,9 @@ export function HomePage() {
             <SectionHeader eyebrow="Today" title="Latest News" href="/section/latest-news" />
             <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {/* Big featured */}
                 <div className="sm:col-span-2 lg:col-span-2">
                   <LargeCard article={latest[0]} />
                 </div>
-                {/* Side stack */}
                 <div className="flex flex-col gap-0 rounded-2xl border border-slate-200 bg-white p-5">
                   {latest.slice(1, 5).map(a => <CompactRow key={a.id} article={a} />)}
                 </div>
@@ -252,7 +344,6 @@ export function HomePage() {
               <div className="hidden xl:block">
                 <AdBanner vertical identifier="homepage-banner-1" />
               </div>
-              {/* Mobile / tablet fallback so this ad slot isn't lost below xl */}
               <div className="xl:hidden">
                 <AdBanner identifier="homepage-banner-1" />
               </div>
@@ -261,13 +352,15 @@ export function HomePage() {
         </section>
       )}
 
+      {/* ── HERO — moved here, after Latest News ── */}
+      <Hero />
+
       {/* ── EDITOR'S ARTICLES ── */}
       {editors.length > 0 && (
         <section className="bg-slate-900 py-12">
           <div className="mx-auto max-w-7xl px-4 lg:px-6">
             <SectionHeader eyebrow="Editorial" title="Editor's Articles" href="/section/editors-articles" light />
             <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-              {/* Large featured */}
               <Link to={`/article/${editors[0].id}`}
                 className="group relative overflow-hidden rounded-2xl shadow-lg">
                 <div className="aspect-[16/10] overflow-hidden">
@@ -282,7 +375,6 @@ export function HomePage() {
                 </div>
               </Link>
 
-              {/* List */}
               <div className="flex flex-col gap-0 rounded-2xl border border-white/10 bg-white/5 p-5">
                 {editors.slice(1, 5).map((a, i) => (
                   <Link key={a.id} to={`/article/${a.id}`}
@@ -314,43 +406,43 @@ export function HomePage() {
       </section>
 
       {/* ── PAKISTAN ── */}
-      {pk.length > 0 && (
+      {data.pakistan.length > 0 && (
         <section className="bg-emerald-900 py-12">
           <div className="mx-auto max-w-7xl px-4 lg:px-6">
             <SectionHeader eyebrow="Country" title="Pakistan" href="/world/pakistan" light />
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-              {pk.map(a => <DarkCard key={a.id} article={a} />)}
+              {data.pakistan.map(a => <DarkCard key={a.id} article={a} />)}
             </div>
           </div>
         </section>
       )}
 
       {/* ── CENTRAL ASIA ── */}
-      {ca.length > 0 && (
+      {data.centralAsia.length > 0 && (
         <section className="bg-slate-800 py-12">
           <div className="mx-auto max-w-7xl px-4 lg:px-6">
             <SectionHeader eyebrow="Region" title="Central Asia" href="/world/central-asia" light />
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-              {ca.map(a => <DarkCard key={a.id} article={a} />)}
+              {data.centralAsia.map(a => <DarkCard key={a.id} article={a} />)}
             </div>
           </div>
         </section>
       )}
 
       {/* ── MIDDLE EAST ── */}
-      {me.length > 0 && (
+      {data.middleEast.length > 0 && (
         <section className="bg-slate-700 py-12">
           <div className="mx-auto max-w-7xl px-4 lg:px-6">
             <SectionHeader eyebrow="Region" title="Middle East" href="/world/middle-east" light />
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-              {me.map(a => <DarkCard key={a.id} article={a} />)}
+              {data.middleEast.map(a => <DarkCard key={a.id} article={a} />)}
             </div>
           </div>
         </section>
       )}
 
       {/* ── ASEAN ── */}
-      {aseanArt.length > 0 && (
+      {data.asean.length > 0 && (
         <section className="border-b border-slate-100 bg-white py-12">
           <div className="mx-auto max-w-7xl px-4 lg:px-6">
             <SectionHeader eyebrow="South-East Asia" title="ASEAN" href="/world/asean" />
@@ -359,15 +451,13 @@ export function HomePage() {
                 <AdBanner vertical identifier="homepage-banner-4" />
               </div>
               <div className="grid gap-5">
-                {/* Featured row */}
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <LargeCard article={aseanArt[0]} />
-                  {aseanArt[1] && <LargeCard article={aseanArt[1]} />}
+                  <LargeCard article={data.asean[0]} />
+                  {data.asean[1] && <LargeCard article={data.asean[1]} />}
                 </div>
-                {/* Compact row */}
-                {aseanArt.length > 2 && (
+                {data.asean.length > 2 && (
                   <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                    {aseanArt.slice(2, 6).map(a => (
+                    {data.asean.slice(2, 6).map(a => (
                       <Link key={a.id} to={`/article/${a.id}`}
                         className="group block border-l-2 border-red-200 pl-3 hover:border-red-500 transition">
                         <span className="text-[10px] font-black uppercase tracking-widest text-red-500">{a.category}</span>
@@ -377,7 +467,6 @@ export function HomePage() {
                     ))}
                   </div>
                 )}
-                {/* Mobile / tablet fallback ad slot */}
                 <div className="xl:hidden">
                   <AdBanner identifier="homepage-banner-4" />
                 </div>
@@ -410,15 +499,14 @@ export function HomePage() {
         </section>
       )}
 
-
       {/* ── OPINION ── */}
-      {opinion.length > 0 && (
+      {data.opinionArticles.length > 0 && (
         <section className="bg-amber-50 py-12">
           <div className="mx-auto max-w-7xl px-4 lg:px-6">
             <SectionHeader eyebrow="Perspectives" title="Opinion" href="/section/opinion" />
             <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                {opinion.slice(0, 4).map(a => (
+                {data.opinionArticles.slice(0, 4).map(a => (
                   <Link key={a.id} to={`/article/${a.id}`}
                     className="group flex flex-col overflow-hidden rounded-2xl border border-amber-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
                     {a.image && (
@@ -455,7 +543,6 @@ export function HomePage() {
           </div>
         </section>
       )}
-
     </div>
   );
 }
