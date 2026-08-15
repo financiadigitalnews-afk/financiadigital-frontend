@@ -13,6 +13,7 @@ export type Article = {
   featured?: boolean;
   archived?: boolean;
   topic?: string;
+  createdAt?: string; 
 };
 
 export type NavCategory = {
