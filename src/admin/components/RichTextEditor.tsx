@@ -1,6 +1,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { sanitizeHtml } from '../utils/sanitize';
+import { useAdminAuth } from '../context/AdminAuthContext';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const TOOLS = [
   { cmd: 'bold', icon: '<b>B</b>', title: 'Bold' },
@@ -24,17 +27,32 @@ function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
+// Pulls a YouTube video ID out of any common URL shape the user might paste.
+function extractYouTubeId(url: string): string | null {
+  const m = url.match(
+    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+  );
+  return m ? m[1] : null;
+}
+
 export function RichTextEditor({ value, onChange, placeholder }: {
   value: string;
   onChange: (html: string) => void;
   placeholder?: string;
 }) {
+  const { admin } = useAdminAuth();
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const replaceInputRef = useRef<HTMLInputElement>(null);
+  const videoFileInputRef = useRef<HTMLInputElement>(null);
   const savedRangeRef = useRef<Range | null>(null);
   const activeImgRef = useRef<HTMLImageElement | null>(null);
   const [imgToolbar, setImgToolbar] = useState<{ top: number; left: number } | null>(null);
+
+  const [videoMenuOpen, setVideoMenuOpen] = useState(false);
+  const [youtubeInput, setYoutubeInput] = useState('');
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [videoError, setVideoError] = useState('');
 
   useEffect(() => {
     if (editorRef.current && !editorRef.current.innerHTML && value) {
@@ -126,9 +144,78 @@ export function RichTextEditor({ value, onChange, placeholder }: {
     setImgToolbar(null);
   };
 
+  // --- Video insertion ---
+
+  const handleVideoButtonClick = () => {
+    saveSelection();
+    setVideoError('');
+    setVideoMenuOpen((o) => !o);
+  };
+
+  const handleInsertYouTube = () => {
+    const id = extractYouTubeId(youtubeInput.trim());
+    if (!id) {
+      setVideoError('Could not find a valid YouTube link in that text.');
+      return;
+    }
+    editorRef.current?.focus();
+    restoreSelection();
+    const embedHtml = `<div style="position:relative;padding-top:56.25%;margin:16px 0;border-radius:8px;overflow:hidden;"><iframe src="https://www.youtube.com/embed/${id}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allowfullscreen></iframe></div>`;
+    document.execCommand('insertHTML', false, embedHtml);
+    handleInput();
+    setYoutubeInput('');
+    setVideoError('');
+    setVideoMenuOpen(false);
+  };
+
+  const handleDeviceVideoClick = () => {
+    setVideoMenuOpen(false);
+    videoFileInputRef.current?.click();
+  };
+
+  // Uploads the video file to your real backend (Cloudinary, via
+  // /api/uploads) and inserts the resulting hosted URL — not a base64
+  // data URL. This keeps large video files out of your MongoDB documents.
+  const handleVideoFileChosen = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setVideoUploading(true);
+    setVideoError('');
+    saveSelection();
+
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+
+      const res = await fetch(`${API_URL}/uploads`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${admin?.token || ''}` },
+        body: fd,
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.url) {
+        throw new Error(data?.message || 'Video upload failed');
+      }
+
+      editorRef.current?.focus();
+      restoreSelection();
+      const videoHtml = `<video src="${data.url}" controls style="max-width:100%;border-radius:8px;margin:12px 0;display:block;"></video>`;
+      document.execCommand('insertHTML', false, videoHtml);
+      handleInput();
+    } catch (err: any) {
+      setVideoError(err.message || 'Video upload failed');
+    } finally {
+      setVideoUploading(false);
+      e.target.value = '';
+    }
+  };
+
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 focus-within:border-red-400 focus-within:ring-1 focus-within:ring-red-400">
-      <div className="flex flex-wrap gap-0.5 border-b border-gray-100 bg-gray-50 p-1.5">
+      <div className="relative flex flex-wrap gap-0.5 border-b border-gray-100 bg-gray-50 p-1.5">
         {TOOLS.map((t) => (
           <button
             key={t.cmd}
@@ -148,8 +235,54 @@ export function RichTextEditor({ value, onChange, placeholder }: {
         >
           🖼 Image
         </button>
+
+        <button
+          type="button"
+          title="Insert Video"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={handleVideoButtonClick}
+          className="min-w-[36px] rounded-md px-2 py-1 text-xs font-medium text-gray-600 transition hover:bg-white hover:text-gray-900 hover:shadow-sm"
+        >
+          🎥 Video
+        </button>
+
+        {videoMenuOpen && (
+          <div className="absolute left-0 top-full z-20 mt-1 w-72 rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
+            <button
+              type="button"
+              onClick={handleDeviceVideoClick}
+              disabled={videoUploading}
+              className="w-full rounded-md border border-gray-200 px-3 py-2 text-left text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              {videoUploading ? '⏳ Uploading…' : '📁 Upload from device'}
+            </button>
+
+            <div className="mt-2 flex gap-1.5">
+              <input
+                value={youtubeInput}
+                onChange={(e) => setYoutubeInput(e.target.value)}
+                placeholder="Paste YouTube link…"
+                className="flex-1 rounded-md border border-gray-200 px-2 py-1.5 text-xs focus:border-indigo-400 focus:outline-none"
+                onKeyDown={(e) => e.key === 'Enter' && handleInsertYouTube()}
+              />
+              <button
+                type="button"
+                onClick={handleInsertYouTube}
+                className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700"
+              >
+                Add
+              </button>
+            </div>
+
+            {videoError && (
+              <p className="mt-2 text-xs text-red-500">{videoError}</p>
+            )}
+          </div>
+        )}
+
         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChosen} />
         <input ref={replaceInputRef} type="file" accept="image/*" className="hidden" onChange={handleReplaceFileChosen} />
+        <input ref={videoFileInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoFileChosen} />
       </div>
 
       <div className="relative">
