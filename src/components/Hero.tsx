@@ -75,9 +75,7 @@ export function Hero() {
 
       <div className="relative z-10 mx-auto flex h-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl rounded-2xl border border-white/35 bg-slate-950/45 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.35)] sm:p-6 lg:p-7">
-          <p className="text-[10px] font-black uppercase tracking-[0.35em] text-slate-200">
-            Home Page Hero
-          </p>
+        
 
           <h1 className="mt-3 text-2xl font-black leading-[1.1] tracking-[-0.03em] text-white sm:text-3xl lg:text-4xl">
             {title}
